@@ -11,6 +11,27 @@ GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 BLACK = (0, 0, 0)
 
+class Search():
+    def __init__(self, screen, start, end, blocks):
+        self.screen = screen
+        self.start = start
+        self.end = end
+        self.blocks = blocks
+        self.current = self.start
+        self.path = []
+
+    def avilable_moves(self):
+        moves = []
+        print("Start:", self.start)
+        for r in [-1, 0, 1]:
+            for c in [-1, 0, 1]:
+                if c != 0 or r != 0:
+                    if self.current[0] + r >= 0 and self.current[0] + r < SQS_PER_ROW and \
+                       self.current[1] + c >= 0 and self.current[1] + c < SQS_PER_ROW:
+            
+                       moves.append((self.current[0] + r, self.current[1] + c))
+        return moves
+
 def draw_board(screen):
     for i in range(SQS_PER_ROW):
         for j in range(SQS_PER_ROW):
@@ -33,7 +54,7 @@ def get_point(screen, color):
                 row //= SQ_SIZE
                 col //= SQ_SIZE
                 draw_rect(screen, row, col, color, 20)
-                return (row, col)
+                return (col, row)
 
 def run_window(screen):
     screen.fill(BLACK)
@@ -69,7 +90,10 @@ def run_window(screen):
 
             if start and end:
                 #pass start and end to search method
-                pass
+                s = Search(screen, start, end, blocks)
+                print(s.avilable_moves())
+                pygame.quit()
+                sys.exit()
                 
         draw_board(screen)        
         pygame.display.update()
