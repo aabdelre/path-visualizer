@@ -1,4 +1,4 @@
-import pygame, sys, math
+import pygame, sys, math, time
 from pygame.locals import *
 import random
 
@@ -9,6 +9,7 @@ SQ_SIZE = WIDTH // SQS_PER_ROW
 WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
 RED = (255, 0, 0)
+BLUE = (0,0,255)
 BLACK = (0, 0, 0)
 
 class Search():
@@ -26,7 +27,8 @@ class Search():
             for c in [-1, 0, 1]:
                 if c != 0 or r != 0:
                     if self.current[0] + r >= 0 and self.current[0] + r < SQS_PER_ROW and \
-                       self.current[1] + c >= 0 and self.current[1] + c < SQS_PER_ROW:
+                       self.current[1] + c >= 0 and self.current[1] + c < SQS_PER_ROW and \
+                       (self.current[0] + r, self.current[1] + c) not in self.blocks:
             
                        moves.append((self.current[0] + r, self.current[1] + c))
         return moves
@@ -58,7 +60,7 @@ class Dijkstra(Search):
 
             self.current = current_min_node
             for neighbor in self.avilable_moves():
-                draw_rect(self.screen, neighbor[0], neighbor[1], GREEN, 20)
+                draw_rect(self.screen, neighbor[1], neighbor[0], GREEN, 20)
                 tentative_value = shortest_path[current_min_node] + self.distance(current_min_node)
                 if tentative_value < shortest_path[neighbor]:
                     shortest_path[neighbor] = tentative_value
@@ -67,19 +69,24 @@ class Dijkstra(Search):
 
             unvisited_nodes.remove(current_min_node)
             pygame.display.update()
+            time.sleep(0.1)
 
         self.print_result(previous_nodes, shortest_path) 
 
     def print_result(self, previous_nodes, shortest_path):
         node = self.end
         while node != self.start:
+            draw_rect(self.screen, node[1], node[0], BLUE, 20)
             self.path.append(node)
             node = previous_nodes[node]
         # Add the start node manually
+        draw_rect(self.screen, self.start[1], self.start[0], BLUE, 20)
         self.path.append(self.start)
+        pygame.display.update()
 
         print("We found the following best path with a value of {}.".format(shortest_path[self.end]))
-        print(self.path)
+        self.path.reverse()
+        print("The path is:", self.path)
 
     def unvisited(self):
         nodes = []
@@ -150,8 +157,9 @@ def run_window(screen):
                 #pass start and end to search method
                 s = Dijkstra(screen, start, end, blocks)
                 s.search()
+                time.sleep(2)
                 pygame.quit()
-                sys.exit()
+                sys.exit()                
                 
         draw_board(screen)        
         pygame.display.update()
