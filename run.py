@@ -1,4 +1,4 @@
-import pygame, sys
+import pygame, sys, math
 from pygame.locals import *
 import random
 
@@ -22,7 +22,6 @@ class Search():
 
     def avilable_moves(self):
         moves = []
-        print("Start:", self.start)
         for r in [-1, 0, 1]:
             for c in [-1, 0, 1]:
                 if c != 0 or r != 0:
@@ -31,6 +30,64 @@ class Search():
             
                        moves.append((self.current[0] + r, self.current[1] + c))
         return moves
+
+    def distance(self, current):
+        return math.dist(current, self.end)
+
+class Dijkstra(Search):
+    def __str__(self):
+        return "Preforming Dijkstra's Algorithm..."
+
+    def search(self):
+        unvisited_nodes =  self.unvisited()
+        shortest_path = {}
+        previous_nodes = {}
+
+        max_value = sys.maxsize
+        for node in unvisited_nodes:
+            shortest_path[node] = max_value
+        
+        shortest_path[self.start] = 0
+        while unvisited_nodes:
+            current_min_node = None
+            for node in unvisited_nodes: # Iterate over the nodes
+                if current_min_node == None:
+                    current_min_node = node
+                elif shortest_path[node] < shortest_path[current_min_node]:
+                    current_min_node = node
+
+            self.current = current_min_node
+            for neighbor in self.avilable_moves():
+                draw_rect(self.screen, neighbor[0], neighbor[1], GREEN, 20)
+                tentative_value = shortest_path[current_min_node] + self.distance(current_min_node)
+                if tentative_value < shortest_path[neighbor]:
+                    shortest_path[neighbor] = tentative_value
+                    # We also update the best path to the current node
+                    previous_nodes[neighbor] = current_min_node
+
+            unvisited_nodes.remove(current_min_node)
+            pygame.display.update()
+
+        self.print_result(previous_nodes, shortest_path) 
+
+    def print_result(self, previous_nodes, shortest_path):
+        node = self.end
+        while node != self.start:
+            self.path.append(node)
+            node = previous_nodes[node]
+        # Add the start node manually
+        self.path.append(self.start)
+
+        print("We found the following best path with a value of {}.".format(shortest_path[self.end]))
+        print(self.path)
+
+    def unvisited(self):
+        nodes = []
+        for i in range(SQS_PER_ROW):
+            for j in range(SQS_PER_ROW):
+                if (i, j) not in self.blocks:
+                    nodes.append((i, j))
+        return nodes
 
 def draw_board(screen):
     for i in range(SQS_PER_ROW):
@@ -71,7 +128,8 @@ def run_window(screen):
                 row, col = event.pos
                 row //= SQ_SIZE
                 col //= SQ_SIZE
-                blocks.append((row, col))
+                if (col, row) not in blocks:
+                    blocks.append((col, row))
                 draw_rect(screen, row, col, WHITE, 20)
 
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -90,8 +148,8 @@ def run_window(screen):
 
             if start and end:
                 #pass start and end to search method
-                s = Search(screen, start, end, blocks)
-                print(s.avilable_moves())
+                s = Dijkstra(screen, start, end, blocks)
+                s.search()
                 pygame.quit()
                 sys.exit()
                 
