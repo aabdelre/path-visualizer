@@ -50,23 +50,25 @@ class Dijkstra(Search):
             shortest_path[node] = max_value
         
         shortest_path[self.start] = 0
-        while unvisited_nodes:
+        target_found = False
+        while unvisited_nodes and not target_found:
             current_min_node = None
             for node in unvisited_nodes: # Iterate over the nodes
                 if current_min_node == None:
                     current_min_node = node
                 elif shortest_path[node] < shortest_path[current_min_node]:
                     current_min_node = node
-
+    
             self.current = current_min_node
             for neighbor in self.avilable_moves():
                 draw_rect(self.screen, neighbor[1], neighbor[0], GREEN, 20)
+                if neighbor == self.end: target_found = True
                 tentative_value = shortest_path[current_min_node] + self.distance(current_min_node)
                 if tentative_value < shortest_path[neighbor]:
                     shortest_path[neighbor] = tentative_value
                     # We also update the best path to the current node
                     previous_nodes[neighbor] = current_min_node
-
+            
             unvisited_nodes.remove(current_min_node)
             pygame.display.update()
             time.sleep(0.1)
