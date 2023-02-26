@@ -51,7 +51,8 @@ class Dijkstra(Search):
         
         shortest_path[self.start] = 0
         target_found = False
-        while unvisited_nodes and not target_found:
+        stuck = False
+        while unvisited_nodes and not target_found and not stuck:
             current_min_node = None
             for node in unvisited_nodes: # Iterate over the nodes
                 if current_min_node == None:
@@ -80,7 +81,13 @@ class Dijkstra(Search):
         while node != self.start:
             draw_rect(self.screen, node[1], node[0], BLUE, 20)
             self.path.append(node)
-            node = previous_nodes[node]
+            if previous_nodes.get(node): node = previous_nodes[node]
+            else:
+                print("No path was found. We got stuck!")
+                time.sleep(2)
+                pygame.quit()
+                sys.exit()    
+        
         # Add the start node manually
         draw_rect(self.screen, self.start[1], self.start[0], BLUE, 20)
         self.path.append(self.start)
